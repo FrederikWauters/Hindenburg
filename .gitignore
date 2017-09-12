@@ -1,0 +1,7 @@
+*log
+tempfile
+output/*
+effRes/*
+*~
+*.root
+*bak
