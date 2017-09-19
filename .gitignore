@@ -12,3 +12,4 @@ pictures/*
 .ipynb_checkpoints/*
 *dat
 *.db
+mozilla.pdf

@@ -38,9 +38,9 @@ UChar_t Y2;
 UChar_t Y3;
 
 //global vars
-const char* path="/home/frederik/data/Hindenburg";
+const char* path="/data/mu3e/IKAR201708/analysis";
 const char* out_name="ProcessedTree.root";
-const char* dataset_name="dataset.dat";
+const char* dataset_name="dataset_small.dat";
 const char* filename_root = "out_";
 
 //Histograms
@@ -60,7 +60,7 @@ void Print_Track()
 
 void Init_histos()
 {
-	hTrigger4HitsTimeDiff = new TH1F("hTrigger4HitsTimeDiff","Time difference between a TPC trigger and a 4 hit track in the pixel telescope; Time difference (ns)",2000 ,-100000,100000); 
+	hTrigger4HitsTimeDiff = new TH1F("hTrigger4HitsTimeDiff","Time difference between a TPC trigger and a 4 hit track in the pixel telescope; Time difference (ns)",1000 ,-200000,200000); 
 	/*hStats = new TH1I("hStats","Module statistics",10,0.5,10.5);
 	hStats->GetXaxis()->SetBinLabel(1,"Trigger-Tracks multi 1");
 	hStats->GetXaxis()->SetBinLabel(2,"Trigger-Tracks multi 2");
@@ -77,7 +77,6 @@ void Init()
 
 void Process_file(int run_nr)
 {
-	return;
   //input file
   char filename[256];
   sprintf(filename,"%s/out_%06d_tracks_triggers.root",path,run_nr);
@@ -121,8 +120,8 @@ void Process_file(int run_nr)
 
   
   Long64_t iLow = 0;
-  Long64_t tLow = -50000; // look 100 us in the past
-  Long64_t tHigh = 50000; //look 100 us ahead
+  Long64_t tLow = -150000; // look 150 us in the past
+  Long64_t tHigh = 150000; //look 150 us ahead
   
   for (Long64_t iTrigger = 0; iTrigger < nentries1 ; iTrigger++) 
   {
@@ -134,12 +133,11 @@ void Process_file(int run_nr)
       for(Long64_t iHit = iLow; iHit < nentries3; iHit++)
       {
 		t3->GetEntry(iHit);
-        Long64_t tDiff =  Long64_t(trigger_time_clk) - Long64_t(frame_clock_time);
-        if( tDiff > tHigh) continue; //trigger to far ahead
-        if( tDiff < tLow) { iLow = iHit; break; }//hits ahead of this trigger
+        double tDiff =  2.0*double(trigger_time_clk) - ( 2.0*double(frame_clock_time) + 16.0*double(time0));
+        if( tDiff > -tLow ) { iLow = iHit; continue; } //trigger too far ahead
+        if( tDiff < -tHigh) {  break; } //hits ahead of this trigger
         //in ROI
-        double tDiff_fine = 2.0*tDiff - time0*16;
-        hTrigger4HitsTimeDiff->Fill(tDiff_fine);
+        hTrigger4HitsTimeDiff->Fill(tDiff);
         multiplicity++;
 	  }
 	}
