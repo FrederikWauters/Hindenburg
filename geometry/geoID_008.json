@@ -1,0 +1,75 @@
+
+{
+  "planes" : 
+  [
+    
+    {
+      "id" : 0,
+      "mupix" : 7,
+      "num_cols" : 32,
+      "num_rows" : 40,
+      "offset_x" : 0,
+      "offset_y" : 0,
+      "offset_z" : 0,
+      "pitch_col" : 103,
+      "pitch_row" : 80,
+      "rotation_x" : 0,
+      "rotation_y" : 0,
+      "rotation_z" : 0,
+      "scattering_thickness" : 0.0025,
+      "tag" : "0xA8"
+    },
+    
+    {
+      "id" : 1,
+      "mupix" : 7,
+      "num_cols" : 32,
+      "num_rows" : 40,
+      "offset_x" : 42.53125855573256,
+      "offset_y" : 141.0852282803234,
+      "offset_z" : 48850,
+      "pitch_col" : 103,
+      "pitch_row" : 80,
+      "rotation_x" : 0,
+      "rotation_y" : 0,
+      "rotation_z" : -0.04304350027814507,
+      "scattering_thickness" : 0.0025,
+      "tag" : "0xA9"
+    },
+    
+    {
+      "id" : 2,
+      "mupix" : 7,
+      "num_cols" : 32,
+      "num_rows" : 40,
+      "offset_x" : -240.2262039298009,
+      "offset_y" : 241.3066325529001,
+      "offset_z" : 99700,
+      "pitch_col" : 103,
+      "pitch_row" : 80,
+      "rotation_x" : 0,
+      "rotation_y" : 0,
+      "rotation_z" : -0.0663938052020967,
+      "scattering_thickness" : 0.0025,
+      "tag" : "0xAA"
+    },
+    
+    {
+      "id" : 3,
+      "mupix" : 7,
+      "num_cols" : 32,
+      "num_rows" : 40,
+      "offset_x" : 0,
+      "offset_y" : 0,
+      "offset_z" : 149000,
+      "pitch_col" : 103,
+      "pitch_row" : 80,
+      "rotation_x" : 0,
+      "rotation_y" : 0,
+      "rotation_z" : -0.0868993815965946,
+      "scattering_thickness" : 0.0025,
+      "tag" : "0xAB"
+    }
+  ],
+  "version" : 1
+}

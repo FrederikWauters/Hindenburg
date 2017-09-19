@@ -1,0 +1,75 @@
+
+{
+  "planes" : 
+  [
+    
+    {
+      "id" : 0,
+      "mupix" : 7,
+      "num_cols" : 32,
+      "num_rows" : 40,
+      "offset_x" : 0,
+      "offset_y" : 0,
+      "offset_z" : 0,
+      "pitch_col" : 103,
+      "pitch_row" : 80,
+      "rotation_x" : 0,
+      "rotation_y" : 0,
+      "rotation_z" : 0,
+      "scattering_thickness" : 0.0025,
+      "tag" : "0xA8"
+    },
+    
+    {
+      "id" : 1,
+      "mupix" : 7,
+      "num_cols" : 32,
+      "num_rows" : 40,
+      "offset_x" : 0,
+      "offset_y" : 0,
+      "offset_z" : 53000,
+      "pitch_col" : 103,
+      "pitch_row" : 80,
+      "rotation_x" : 0,
+      "rotation_y" : 0,
+      "rotation_z" : 0,
+      "scattering_thickness" : 0.0025,
+      "tag" : "0xA9"
+    },
+    
+    {
+      "id" : 2,
+      "mupix" : 7,
+      "num_cols" : 32,
+      "num_rows" : 40,
+      "offset_x" : 0,
+      "offset_y" : 0,
+      "offset_z" : 101000,
+      "pitch_col" : 103,
+      "pitch_row" : 80,
+      "rotation_x" : 0,
+      "rotation_y" : 0,
+      "rotation_z" : 0,
+      "scattering_thickness" : 0.0025,
+      "tag" : "0xAA"
+    },
+    
+    {
+      "id" : 3,
+      "mupix" : 7,
+      "num_cols" : 32,
+      "num_rows" : 40,
+      "offset_x" : 0,
+      "offset_y" : 0,
+      "offset_z" : 149000,
+      "pitch_col" : 103,
+      "pitch_row" : 80,
+      "rotation_x" : 0,
+      "rotation_y" : 0,
+      "rotation_z" : 0,
+      "scattering_thickness" : 0.0025,
+      "tag" : "0xAB"
+    }
+  ],
+  "version" : 1
+}
