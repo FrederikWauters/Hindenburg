@@ -5,6 +5,8 @@
 #include <cstring>
 #include <sstream>
 #include <vector>
+#include <algorithm>
+
 
 #include <TFile.h>
 #include "TSystem.h"
@@ -16,6 +18,7 @@
 //tree variables
 int channel;
 ULong64_t clock_time;
+ULong64_t frame_time;
 double delta_t;   
 double time_stamp;
 double slope_x;
@@ -38,14 +41,16 @@ UChar_t Y2;
 UChar_t Y3;
 
 //global vars
-const char* path="/data/mu3e/IKAR201708/analysis";
+const char* path="/home/frederik/data/Hindenburg";
 const char* out_name="ProcessedTree.root";
-const char* dataset_name="dataset_small.dat";
+const char* dataset_name="dataset.dat";
 const char* filename_root = "out_";
 
 //Histograms
 TH1F* hTrigger4HitsTimeDiff;
 TH1I* hMultiplicity;
+TH1F* hTrackTimes;
+TH1F* hTriggerTimes;
 
 void Print_Track()
 {
@@ -58,9 +63,16 @@ void Print_Track()
   std::cout << " chi2: " << chi2 << std::endl << std::endl;
 }
 
+int64_t GetDifference(uint64_t first, uint64_t second) {
+    uint64_t abs_diff = (first > second) ? (first - second): (second - first);
+    assert(abs_diff<=INT64_MAX);
+    return (first > second) ? (int64_t)abs_diff : -(int64_t)abs_diff;
+}
+
+
 void Init_histos()
 {
-	hTrigger4HitsTimeDiff = new TH1F("hTrigger4HitsTimeDiff","Time difference between a TPC trigger and a 4 hit track in the pixel telescope; Time difference (ns)",1000 ,-200000,200000); 
+	hTrigger4HitsTimeDiff = new TH1F("hTrigger4HitsTimeDiff","Time difference between a TPC trigger and a 4 hit track in the pixel telescope; Time difference (ns)",2000 ,-500000,500000); 
 	/*hStats = new TH1I("hStats","Module statistics",10,0.5,10.5);
 	hStats->GetXaxis()->SetBinLabel(1,"Trigger-Tracks multi 1");
 	hStats->GetXaxis()->SetBinLabel(2,"Trigger-Tracks multi 2");
@@ -68,6 +80,11 @@ void Init_histos()
 	hStats->GetXaxis()->SetBinLabel(4,"Trigger-Tracks multi 4");
 	hStats->GetXaxis()->SetBinLabel(5,"Trigger-Tracks multi 4+");*/
 	hMultiplicity=new TH1I("hMultiplicity"," trigger - track multiplicity",15,0.5,15.5);
+	
+	double max = 80000000000;
+	double min = 60000000000;
+	hTrackTimes = new TH1F("hTrackTimes","track times; time (ns)", 1000000,min,max);
+	hTriggerTimes = new TH1F("hTriggerTimes","trigger times; time (ns)", 1000000,min,max);
 }
 
 void Init()
@@ -91,6 +108,7 @@ void Process_file(int run_nr)
   t1->SetBranchAddress("clock_time",&clock_time);
   t1->SetBranchAddress("delta_t",&delta_t);
   
+  t2->SetBranchAddress("frame_time",&frame_time);
   t2->SetBranchAddress("time_stamp",&time_stamp);
   t2->SetBranchAddress("slope_x",&slope_x);
   t2->SetBranchAddress("slope_y",&slope_y);
@@ -117,36 +135,12 @@ void Process_file(int run_nr)
   Long64_t nentries1 = t1->GetEntries();
   Long64_t nentries2 = t2->GetEntries();
   Long64_t nentries3 = t3->GetEntries();
-
   
-  Long64_t iLow = 0;
-  Long64_t tLow = -150000; // look 150 us in the past
-  Long64_t tHigh = 150000; //look 150 us ahead
-  
-  for (Long64_t iTrigger = 0; iTrigger < nentries1 ; iTrigger++) 
-  {
-	unsigned int multiplicity = 0;
-    t1->GetEntry(iTrigger);
-    if(channel == 4)
-    {
-      ULong64_t trigger_time_clk = clock_time;
-      for(Long64_t iHit = iLow; iHit < nentries3; iHit++)
-      {
-		t3->GetEntry(iHit);
-        double tDiff =  2.0*double(trigger_time_clk) - ( 2.0*double(frame_clock_time) + 16.0*double(time0));
-        if( tDiff > -tLow ) { iLow = iHit; continue; } //trigger too far ahead
-        if( tDiff < -tHigh) {  break; } //hits ahead of this trigger
-        //in ROI
-        hTrigger4HitsTimeDiff->Fill(tDiff);
-        multiplicity++;
-	  }
-	}
-	hMultiplicity->Fill(multiplicity);
-     
-  }
+  std::cout << "nentries1 : " << nentries1 << std::endl;
+  std::cout << "nentries2 : " << nentries2 << std::endl;
+  std::cout << "nentries3 : " << nentries3 << std::endl;
 
-         
-
+  //check some basics
   t1->GetEntry(0);
   std::cout << "first trigger time : " << clock_time*2.0 << std::endl;
   t1->GetEntry(nentries1-1);
@@ -156,6 +150,56 @@ void Process_file(int run_nr)
   t3->GetEntry(nentries3-1);
   std::cout << "last 4 hits time : " << frame_clock_time*2.0+time0*16.0 << std::endl;
    
+  std::vector<double> trigger_times;
+
+  for (Long64_t iTrigger = 0; iTrigger < nentries1 ; iTrigger++) 
+  {
+    t1->GetEntry(iTrigger);
+    double time = 2.0*double(clock_time);
+    if(channel == 4)
+    {
+      hTriggerTimes->Fill(time);
+      trigger_times.push_back(time);
+    }
+  }
+  
+  std::sort(trigger_times.begin(),trigger_times.end());
+  std::cout << " number of TPC triggers found " << trigger_times.size();
+  if(trigger_times.size()>0)
+  {  
+    std::cout << " First t " << trigger_times.at(0) << " Last t " <<  trigger_times.at(trigger_times.size()-1) << std::endl;
+  }
+  
+  Long64_t iLow = 0;
+  double tLow = -200000; // look 150 us in the past
+  double tHigh = 200000; //look 150 us ahead
+  
+
+  
+  for (Long64_t iTrack = 0; iTrack < nentries2 ; iTrack++) 
+  {
+    t2->GetEntry(iTrack);
+    double time = frame_time*2.0 + 16*time_stamp;
+    hTrackTimes->Fill(time);
+    for (unsigned int iTrigger = iLow; iTrigger < trigger_times.size() ; iTrigger++) 
+    {
+      double tDiff = trigger_times.at(iTrigger) - time; // positive for TPC trigger after track, negative for before
+      //std::cout << "tDiff " << tDiff << std::endl;
+      if(tDiff < tLow ) { iLow = iTrigger; continue; }
+      if(tDiff > tHigh ) break;
+      
+      if(fabs(tDiff) < 200000 )
+      {
+	//std::cout << "tDiff " << tDiff << endl; 
+	hTrigger4HitsTimeDiff->Fill(tDiff);
+	//std::cout << "tDiff " << tDiff << std::endl;	
+      }
+    }
+  }
+  //    hMultiplicity->Fill(multiplicity);    
+         
+
+
   f->Close();
   // in the browser, click on "ROOT Files", then on "tree1.root".
   //     you can click on the histogram icons in the right panel to draw them.
@@ -209,7 +253,7 @@ void Process(int run_nr = 11000)
     {	
       // *** extract file number ***
       int run_nr = atoi(file_name+strlen(filename_root));
-      cout << file_name << "    " << run_nr << endl;
+      std::cout << file_name << "    " << run_nr << std::endl;
       
       bool good = false;
       for(unsigned int i = 0; i < run_numbers.size()-1; i++)
