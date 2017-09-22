@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 
 #include <TFile.h>
@@ -174,30 +175,35 @@ void Process_file(int run_nr)
   double tLow = -200000; // look 150 us in the past
   double tHigh = 200000; //look 150 us ahead
   
-
+  std::map<unsigned int, unsigned int> multiplicity;
+  for(unsigned int index = 0; index < trigger_times.size(); index++)
+  {
+    multiplicity[index]=0;
+  }
   
   for (Long64_t iTrack = 0; iTrack < nentries2 ; iTrack++) 
   {
     t2->GetEntry(iTrack);
     double time = frame_time*2.0 + 16*time_stamp;
     hTrackTimes->Fill(time);
-    for (unsigned int iTrigger = iLow; iTrigger < trigger_times.size() ; iTrigger++) 
+    for(unsigned int iTrigger = iLow; iTrigger < trigger_times.size() ; iTrigger++) 
     {
       double tDiff = trigger_times.at(iTrigger) - time; // positive for TPC trigger after track, negative for before
-      //std::cout << "tDiff " << tDiff << std::endl;
       if(tDiff < tLow ) { iLow = iTrigger; continue; }
-      if(tDiff > tHigh ) break;
+      if(tDiff > tHigh ) { break; }
       
       if(fabs(tDiff) < 200000 )
       {
-	//std::cout << "tDiff " << tDiff << endl; 
 	hTrigger4HitsTimeDiff->Fill(tDiff);
-	//std::cout << "tDiff " << tDiff << std::endl;	
-      }
+	multiplicity[iTrigger]++;
+      }      
     }
   }
-  //    hMultiplicity->Fill(multiplicity);    
-         
+  
+  for(unsigned int index = 0; index < trigger_times.size(); index++)
+  {
+    hMultiplicity->Fill(multiplicity[index]);
+  }   
 
 
   f->Close();
